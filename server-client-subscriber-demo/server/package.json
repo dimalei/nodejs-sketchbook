@@ -4,6 +4,7 @@
   "description": "A demo where a client can turn on or off subscribers through a server.",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
