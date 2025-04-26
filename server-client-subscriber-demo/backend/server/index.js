@@ -60,6 +60,17 @@ app.post("/api/toggle-all", (req, res) => {
   res.sendStatus(200);
 });
 
+app.post("/api/toggle", (req, res) => {
+  const toToggleID = req.query.lightID;
+  console.log("toggling ", toToggleID);
+  Array.from(io.sockets.sockets.values())
+    .filter((socket) => socket.data.lightID === toToggleID)
+    .forEach((socket) => {
+      socket.emit("toggle-all");
+    });
+  res.sendStatus(200);
+});
+
 app.post("/api/on-all", (req, res) => {
   console.log("All bulbs are turned on.");
   // send to all socket connections

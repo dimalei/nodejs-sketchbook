@@ -55,11 +55,15 @@ const createTable = (lights) => {
     const lightIDCell = document.createElement("td");
     lightIDCell.textContent = element.lightID;
 
+    const toggleButton = document.createElement("button");
+    toggleButton.textContent = element.isOn ? "ON" : "OFF";
+    toggleButton.onclick = () => {
+      fetch("/api/toggle?lightID=" + element.lightID, { method: "POST" });
+    };
+    toggleButton.style.backgroundColor = element.isOn ? "lightgreen" : "tomato";
+
     const statusCell = document.createElement("td");
-    statusCell.textContent = element.isOn ? "ON" : "OFF";
-    statusCell.style.backgroundColor = element.isOn ? "lightgreen" : "tomato";
-    statusCell.style.color = "white";
-    statusCell.style.textAlign = "center";
+    statusCell.appendChild(toggleButton);
 
     row.appendChild(lightIDCell);
     row.appendChild(statusCell);
