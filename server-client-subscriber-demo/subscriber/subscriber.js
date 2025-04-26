@@ -6,7 +6,7 @@ const button = document.querySelector("button");
 
 let isOn = false;
 
-const socket = io("ws://localhost:8080", {
+const socket = io("ws://192.168.1.59:8080", {
   auth: {
     lightID: lightID,
     isOn: isOn,
@@ -48,12 +48,14 @@ function turnOnBulb() {
   isOn = true;
   bulb.classList.add("bulb-on");
   statusString.innerHTML = "Light is ON";
+  socket.emit("turn-on");
 }
 
 function turnOffBulb() {
   isOn = false;
   bulb.classList.remove("bulb-on");
   statusString.innerHTML = "Light is OFF";
+  socket.emit("turn-off");
 }
 
 button.onclick = () => {

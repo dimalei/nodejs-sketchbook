@@ -21,10 +21,20 @@ io.on("connection", (socket) => {
   socket.data.lightID = lightID;
   socket.data.isOn = isOn;
   console.log(`Bulb ID from auth: ${socket.handshake.auth.lightID}`);
-});
 
-io.on("disconnect", (reason) => {
-  console.log(reason);
+  socket.on("turn-on", () => {
+    socket.data.isOn = true;
+    console.log(`Bulb ${socket.data.lightID} just turned ON.`);
+  });
+
+  socket.on("turn-off", () => {
+    socket.data.isOn = false;
+    console.log(`Bulb ${socket.data.lightID} just turned OFF.`);
+  });
+
+  socket.on("disconnect", (reason) => {
+    console.log(`Socket ${socket.data.lightID} disconnected: ${reason}`);
+  });
 });
 
 server.listen(port, () => {
@@ -55,12 +65,10 @@ app.post("/off-all", (req, res) => {
 setInterval(() => {
   // print all connected sockets evers 5 seconds
   console.log("Currently connected sockets:");
-
   for (const [id, socket] of io.sockets.sockets) {
     console.log(
       `- Socket ID: ${id}, Light ID: ${socket.data.lightID}, isOn: ${socket.data.isOn}`
     );
   }
-
   console.log("-----");
 }, 5000);
