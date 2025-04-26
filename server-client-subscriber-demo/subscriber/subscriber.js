@@ -13,14 +13,17 @@ const socket = io("ws://localhost:8080", {
   },
 });
 
-console.log("This lgiht ID is: " + lightID); // example output: "k8l3jf9xq"
+console.log("This light ID is: " + lightID); // example output: "k8l3jf9xq"
 
 lightIDString.innerHTML = "Light ID: #" + lightID;
 
-socket.on("toggle", (text) => {
-  const element = document.createElement("li");
-  element.innerHTML = text;
-  document.querySelector("ul").appendChild(element);
+socket.on("connect", () => {
+  console.log(`Connected to server as socket ${socket.id}`);
+});
+
+socket.on("toggle-all", () => {
+  console.log("received toggle-all event.");
+  toggleBulb();
 });
 
 function toggleBulb() {
