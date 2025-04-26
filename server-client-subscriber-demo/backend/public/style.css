@@ -2,6 +2,7 @@ body {
   display: flex;
   flex-direction: column;
   align-content: center;
+  font-family: sans-serif;
 }
 
 h1 {
@@ -10,4 +11,12 @@ h1 {
 
 button {
   margin: 4px;
+}
+
+.lights-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.light-card {
 }

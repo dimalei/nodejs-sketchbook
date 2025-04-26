@@ -15,14 +15,14 @@ const port = 8080;
 app.use(express.static(path.join(__dirname, "../public")));
 const authToken = "1234";
 
-const connectedBulbs = [];
-
 io.on("connection", (socket) => {
   // save light info in socket object
 
   if (socket.handshake.auth.type === "bulb") {
+    socket.data.type = socket.handshake.auth.type;
     socket.data.lightID = socket.handshake.auth.bulbID;
     socket.data.isOn = socket.handshake.auth.isOn;
+    io.emit("refresh-ui");
     console.log(`Bulb just connected with ID: ${socket.data.lightID}`);
   } else if (socket.handshake.auth.token === authToken) {
     socket.data.type = "UI";
@@ -40,7 +40,12 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", (reason) => {
+    io.emit("refresh-ui");
     console.log(`Socket ${socket.data.lightID} disconnected: ${reason}`);
+  });
+
+  socket.onAny(() => {
+    io.emit("refresh-ui");
   });
 });
 
@@ -48,25 +53,38 @@ server.listen(port, () => {
   console.log(`Server listening on port http://localhost:${port}`);
 });
 
-app.post("/toggle-all", (req, res) => {
+app.post("/api/toggle-all", (req, res) => {
   console.log("All bulbs are toggled.");
   // send to all socket connections
   io.emit("toggle-all");
   res.sendStatus(200);
 });
 
-app.post("/on-all", (req, res) => {
+app.post("/api/on-all", (req, res) => {
   console.log("All bulbs are turned on.");
   // send to all socket connections
   io.emit("on-all");
   res.sendStatus(200);
 });
 
-app.post("/off-all", (req, res) => {
+app.post("/api/off-all", (req, res) => {
   console.log("All bulbs are turned off.");
   // send to all socket connections
   io.emit("off-all");
   res.sendStatus(200);
+});
+
+app.get("/api/lights", (req, res) => {
+  let lights = [];
+  io.sockets.sockets.forEach((socket) => {
+    if (socket.data.type === "bulb") {
+      lights.push({
+        lightID: socket.data.lightID,
+        isOn: socket.data.isOn,
+      });
+    }
+  });
+  res.send({ lights: lights });
 });
 
 setInterval(() => {
