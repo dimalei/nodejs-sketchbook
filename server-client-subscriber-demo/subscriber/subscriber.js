@@ -1,21 +1,22 @@
-const lightID = Math.random().toString(36).slice(2, 9).toUpperCase();
-const lightIDString = document.querySelector(".lightID");
+const bulbID = Math.random().toString(36).slice(2, 9).toUpperCase();
+const bulbIDString = document.querySelector(".lightID");
 const statusString = document.querySelector(".statusString");
 const bulb = document.querySelector(".bulb");
 const button = document.querySelector("button");
 
 let isOn = false;
 
-const socket = io("ws://192.168.1.59:8080", {
+const socket = io("ws://localhost:8080", {
   auth: {
-    lightID: lightID,
+    type: "bulb",
+    bulbID: bulbID,
     isOn: isOn,
   },
 });
 
-console.log("This light ID is: " + lightID); // example output: "k8l3jf9xq"
+console.log("This light ID is: " + bulbID); // example output: "k8l3jf9xq"
 
-lightIDString.innerHTML = "Light ID: #" + lightID;
+bulbIDString.innerHTML = "Light ID: #" + bulbID;
 
 socket.on("connect", () => {
   console.log(`Connected to server as socket ${socket.id}`);

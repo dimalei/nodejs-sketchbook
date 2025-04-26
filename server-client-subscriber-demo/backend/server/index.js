@@ -10,17 +10,24 @@ const io = new Server(server, {
 });
 
 const port = 8080;
+
+// frontent route
 app.use(express.static(path.join(__dirname, "../public")));
+const authToken = "1234";
 
 const connectedBulbs = [];
 
 io.on("connection", (socket) => {
   // save light info in socket object
-  const lightID = socket.handshake.auth.lightID;
-  const isOn = socket.handshake.auth.isOn;
-  socket.data.lightID = lightID;
-  socket.data.isOn = isOn;
-  console.log(`Bulb ID from auth: ${socket.handshake.auth.lightID}`);
+
+  if (socket.handshake.auth.type === "bulb") {
+    socket.data.lightID = socket.handshake.auth.bulbID;
+    socket.data.isOn = socket.handshake.auth.isOn;
+    console.log(`Bulb just connected with ID: ${socket.data.lightID}`);
+  } else if (socket.handshake.auth.token === authToken) {
+    socket.data.type = "UI";
+    console.log(`A UI just connected.`);
+  }
 
   socket.on("turn-on", () => {
     socket.data.isOn = true;
@@ -66,9 +73,13 @@ setInterval(() => {
   // print all connected sockets evers 5 seconds
   console.log("Currently connected sockets:");
   for (const [id, socket] of io.sockets.sockets) {
-    console.log(
-      `- Socket ID: ${id}, Light ID: ${socket.data.lightID}, isOn: ${socket.data.isOn}`
-    );
+    if (socket.data.type === "UI") {
+      console.log(`- Socket ID: ${id}, User Interface`);
+    } else {
+      console.log(
+        `- Socket ID: ${id}, Light ID: ${socket.data.lightID}, isOn: ${socket.data.isOn}`
+      );
+    }
   }
   console.log("-----");
 }, 5000);
