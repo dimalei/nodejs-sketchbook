@@ -26,6 +26,16 @@ socket.on("toggle-all", () => {
   toggleBulb();
 });
 
+socket.on("on-all", () => {
+  console.log("received on-all event.");
+  turnOnBulb();
+});
+
+socket.on("off-all", () => {
+  console.log("received off-all event.");
+  turnOffBulb();
+});
+
 function toggleBulb() {
   if (isOn) {
     turnOffBulb();

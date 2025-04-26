@@ -38,6 +38,20 @@ app.post("/toggle-all", (req, res) => {
   res.sendStatus(200);
 });
 
+app.post("/on-all", (req, res) => {
+  console.log("All bulbs are turned on.");
+  // send to all socket connections
+  io.emit("on-all");
+  res.sendStatus(200);
+});
+
+app.post("/off-all", (req, res) => {
+  console.log("All bulbs are turned off.");
+  // send to all socket connections
+  io.emit("off-all");
+  res.sendStatus(200);
+});
+
 setInterval(() => {
   // print all connected sockets evers 5 seconds
   console.log("Currently connected sockets:");
