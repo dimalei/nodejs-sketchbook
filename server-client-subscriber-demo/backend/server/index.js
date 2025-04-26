@@ -39,6 +39,7 @@ app.post("/toggle-all", (req, res) => {
 });
 
 setInterval(() => {
+  // print all connected sockets evers 5 seconds
   console.log("Currently connected sockets:");
 
   for (const [id, socket] of io.sockets.sockets) {
