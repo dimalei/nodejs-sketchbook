@@ -10,17 +10,19 @@ const io = new Server(server, {
 
 const port = 8080;
 
+const connectedBulbs = [];
+
 io.on("connection", (socket) => {
-  //   console.log(`A Bulb connected ${socket.id}`);
-  // save light in socket object
+  // save light info in socket object
   const lightID = socket.handshake.auth.lightID;
+  const isOn = socket.handshake.auth.isOn;
   socket.data.lightID = lightID;
+  socket.data.isOn = isOn;
   console.log(`Bulb ID from auth: ${socket.handshake.auth.lightID}`);
-  debugger;
 });
 
 app.get("/", (req, res) => {
-  res.send("<h1>Hello World!</h1>");
+  res.send("<h1>Controlling the bulbs!</h1>");
 });
 
 server.listen(port, () => {
