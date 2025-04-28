@@ -5,27 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bulb Dashboard</title>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <link rel="icon" href="favicon.png" />
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Controlling some 💡</h1>
-    <button class="toggleAll">Toggle All</button>
-    <button class="onAll">Turn all ON</button>
-    <button class="offAll">Turn all OFF</button>
+    <section class="jumbotron text-center">
+      <div class="container">
+        <h1 class="jumbotron-heading">Controlling some 💡</h1>
+      </div>
+    </section>
+    <h1></h1>
+    <button class="toggleAll btn">Toggle ALL</button>
+    <button class="onAll btn">Turn all ON</button>
+    <button class="offAll btn">Turn all OFF</button>
 
     <!-- dynamic list  -->
-    <table id="lightsTable">
-      <thead>
-        <tr>
-          <th>Light ID</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="lightsList">
-        <!-- this part is dynamic -->
-      </tbody>
-    </table>
+    <ul
+      id="lightsList"
+      class="row row-cols-3 row-cols-sm-4 row-cols-lg-6 row-cols-xl-8 list-unstyled list"
+    ></ul>
 
-    <script src="client.js"></script>
+    <script type="module" src="client.js"></script>
   </body>
 </html>

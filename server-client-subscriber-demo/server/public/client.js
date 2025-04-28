@@ -1,7 +1,9 @@
+import { createListItem } from "./createListItem.js";
+
 const toggleAll = document.querySelector(".toggleAll");
 const onAll = document.querySelector(".onAll");
 const offAll = document.querySelector(".offAll");
-const lightsList = document.querySelector("#lightsList");
+const lightsList = document.getElementById("lightsList");
 
 const superSectretAuthToken = "1234";
 
@@ -50,23 +52,31 @@ const createTable = (lights) => {
   lightsList.innerHTML = "";
 
   lights.forEach((element) => {
-    const row = document.createElement("tr");
+    const listItem = createListItem(
+      element.lightID,
+      () => {
+        fetch("/api/toggle?lightID=" + element.lightID, { method: "POST" });
+      },
+      element.isOn ? "/icons/lightbulb-fill/" : "/icons/lightbulb/"
+    );
+    // const card = Object.assign(document.createElement("div"), {
+    //   className: "card mb-4 box-shadow",
+    // });
+    // const cardBody = Object.assign(document.createElement("div"), {
+    //   className: "card mb-4 box-shadow",
+    // });
 
-    const lightIDCell = document.createElement("td");
-    lightIDCell.textContent = element.lightID;
+    // const title = document.createElement("p");
+    // title.textContent = element.lightID;
+    // cardBody.appendChild(title);
+    // card.appendChild(cardBody);
+    // // element.lightID;
+    // // element.isOn ? "ON" : "OFF";
+    // card.onclick = () => {
+    //   fetch("/api/toggle?lightID=" + element.lightID, { method: "POST" });
+    // };
+    // // element.isOn ? "lightgreen" : "tomato";
 
-    const toggleButton = document.createElement("button");
-    toggleButton.textContent = element.isOn ? "ON" : "OFF";
-    toggleButton.onclick = () => {
-      fetch("/api/toggle?lightID=" + element.lightID, { method: "POST" });
-    };
-    toggleButton.style.backgroundColor = element.isOn ? "lightgreen" : "tomato";
-
-    const statusCell = document.createElement("td");
-    statusCell.appendChild(toggleButton);
-
-    row.appendChild(lightIDCell);
-    row.appendChild(statusCell);
-    lightsList.appendChild(row);
+    lightsList.appendChild(listItem);
   });
 };
