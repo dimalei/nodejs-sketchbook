@@ -1,7 +1,9 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
-#define LED_PIN 8
-#define LED_COUNT 1
+// 4 external RGB LEDs on pin 1
+// 1 internal RGB LED on pin 8
+#define LED_PIN 1
+#define LED_COUNT 4
 Adafruit_NeoPixel pixel(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 void setup()
@@ -14,10 +16,13 @@ void setup()
 
 void loop()
 {
-  pixel.setPixelColor(0, pixel.Color(100, 240, 100));
+  pixel.setPixelColor(3, pixel.Color(250, 0, 0));
   pixel.show();
   sleep(1);
-  pixel.setPixelColor(0, pixel.Color(240, 100, 100));
+  pixel.setPixelColor(3, pixel.Color(0, 250, 0));
+  pixel.show();
+  sleep(1);
+  pixel.setPixelColor(3, pixel.Color(250, 250, 0));
   pixel.show();
   sleep(1);
 }
