@@ -25,7 +25,7 @@ io.on("connection", (socket) => {
     socket.data.isOn = query.isOn === "true"; // since query params are strings
     io.emit("refresh-ui");
     console.log(`Bulb just connected with ID: ${socket.data.lightID}`);
-  } else if (query.type === authToken) {
+  } else if (query.type === "ui") {
     socket.data.type = "UI";
     console.log(`A UI just connected.`);
   }
@@ -45,8 +45,9 @@ io.on("connection", (socket) => {
     console.log(`Socket ${socket.data.lightID} disconnected: ${reason}`);
   });
 
-  socket.onAny(() => {
+  socket.onAny((event, ...args) => {
     io.emit("refresh-ui");
+    console.log(`Received event '${event}' with args:`, args);
   });
 });
 
@@ -102,21 +103,15 @@ app.get("/api/lights", (req, res) => {
 setInterval(() => {
   // print all connected sockets evers 5 seconds
   console.log("Currently connected sockets:");
-  // for (const [id, socket] of io.sockets.sockets) {
-  //   if (socket.data.type === "UI") {
-  //     console.log(`- Socket ID: ${id}, User Interface`);
-  //   } else {
-  //     console.log(
-  //       `- Socket ID: ${id}, Light ID: ${socket.data.lightID}, isOn: ${socket.data.isOn}`
-  //     );
-  //   }
-  // }
   for (const [id, socket] of io.sockets.sockets) {
-    if (socket.data.type === "UI") {
+    if (socket.data.type === "ui") {
       console.log(`- Socket ID: ${id}, User Interface`);
     } else {
-      console.log(`- Socket ID: ${id}`);
+      console.log(
+        `- Socket ID: ${id}, Light ID: ${socket.data.lightID}, isOn: ${socket.data.isOn}`
+      );
     }
   }
+
   console.log("-----");
 }, 5000);

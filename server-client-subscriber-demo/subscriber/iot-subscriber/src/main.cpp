@@ -12,6 +12,7 @@
 #define LED_PIN 1
 #define LED_COUNT 4
 Adafruit_NeoPixel pixel(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+bool bulbIsOn = false;
 
 char bulbID[20] = "ESP32_";
 uint8_t macAddress[6];
@@ -21,6 +22,41 @@ const uint16_t PORT = 8080;
 SocketIOclient socketIO;
 unsigned long lastReconnectAttempt = 0;
 const unsigned long reconnectInterval = 5000;
+
+void turnOnBulb() {
+  pixel.setBrightness(50);
+  pixel.setPixelColor(0, pixel.Color(255, 255, 200));
+  pixel.show();
+  bulbIsOn = true;
+
+  JsonDocument doc;
+  JsonArray array = doc.to<JsonArray>();
+  array.add("turn-on");
+  String output;
+  serializeJson(doc, output);
+  socketIO.sendEVENT(output);
+}
+
+void turnOffBulb() {
+  pixel.clear();
+  pixel.show();
+  bulbIsOn = false;
+
+  JsonDocument doc;
+  JsonArray array = doc.to<JsonArray>();
+  array.add("turn-off");
+  String output;
+  serializeJson(doc, output);
+  socketIO.sendEVENT(output);
+}
+
+void toggleBulb() {
+  if (bulbIsOn) {
+    turnOffBulb();
+  } else {
+    turnOnBulb();
+  }
+}
 
 void socketIOEvent(socketIOmessageType_t type, uint8_t *payload,
                    size_t length) {
@@ -55,23 +91,23 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t *payload,
 
       // Message Includes a ID for a ACK (callback)
       if (id) {
-        // create JSON message for Socket.IO (ack)
         JsonDocument docOut;
         JsonArray array = docOut.to<JsonArray>();
-
-        // add payload (parameters) for the ack (callback function)
-        array.add<JsonObject>();
         JsonObject param1;
-        param1["now"] = millis();
+        array.add<JsonObject>(param1);
+        param1["ack"] = true;
+        param1["timestamp"] = millis();
 
-        // JSON to String (serializion)
         String output;
         output += id;
         serializeJson(docOut, output);
-
-        // Send event
         socketIO.send(sIOtype_ACK, output);
       }
+
+      if (eventName.equals("toggle-all")) {
+        toggleBulb();
+      }
+
     } break;
     case sIOtype_ACK:
       USE_SERIAL.printf("[IOc] get ack: %u\n", length);
@@ -132,15 +168,15 @@ void setup() {
 void loop() {
   socketIO.loop();
 
-  if (!socketIO.isConnected()) {
-    unsigned long now = millis();
-    if (now - lastReconnectAttempt > reconnectInterval) {
-      USE_SERIAL.println("Trying to reconnect to Socket.IO server...");
-      String url = "/socket.io/?EIO=4&type=bulb&bulbID=";
-      url += bulbID;
-      url += "&isOn=false";
-      socketIO.begin(HOST, PORT, url);
-      lastReconnectAttempt = now;
-    }
+  if (!socketIO.isConnected() &&
+      millis() - lastReconnectAttempt > reconnectInterval) {
+    USE_SERIAL.println("Trying to reconnect to Socket.IO server...");
+    String url = "/socket.io/?EIO=4&type=bulb&bulbID=";
+    url += bulbID;
+    url += "&isOn=";
+    url += bulbIsOn ? "true" : "false";
+    socketIO.begin(HOST, PORT, url);
+    socketIO.onEvent(socketIOEvent);  // re-attach event handler after reconnect
+    lastReconnectAttempt = millis();
   }
 }

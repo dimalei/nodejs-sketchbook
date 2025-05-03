@@ -7,7 +7,8 @@ const superSectretAuthToken = "1234";
 
 // initiatie socket
 const socket = io("ws://localhost:8080", {
-  auth: {
+  query: {
+    type: "ui",
     token: superSectretAuthToken,
   },
 });
