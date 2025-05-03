@@ -17,14 +17,15 @@ const authToken = "1234";
 
 io.on("connection", (socket) => {
   // save light info in socket object
+  const query = socket.handshake.query;
 
-  if (socket.handshake.auth.type === "bulb") {
-    socket.data.type = socket.handshake.auth.type;
-    socket.data.lightID = socket.handshake.auth.bulbID;
-    socket.data.isOn = socket.handshake.auth.isOn;
+  if (query.type === "bulb") {
+    socket.data.type = query.type;
+    socket.data.lightID = query.bulbID;
+    socket.data.isOn = query.isOn === "true"; // since query params are strings
     io.emit("refresh-ui");
     console.log(`Bulb just connected with ID: ${socket.data.lightID}`);
-  } else if (socket.handshake.auth.token === authToken) {
+  } else if (query.type === authToken) {
     socket.data.type = "UI";
     console.log(`A UI just connected.`);
   }
@@ -101,13 +102,20 @@ app.get("/api/lights", (req, res) => {
 setInterval(() => {
   // print all connected sockets evers 5 seconds
   console.log("Currently connected sockets:");
+  // for (const [id, socket] of io.sockets.sockets) {
+  //   if (socket.data.type === "UI") {
+  //     console.log(`- Socket ID: ${id}, User Interface`);
+  //   } else {
+  //     console.log(
+  //       `- Socket ID: ${id}, Light ID: ${socket.data.lightID}, isOn: ${socket.data.isOn}`
+  //     );
+  //   }
+  // }
   for (const [id, socket] of io.sockets.sockets) {
     if (socket.data.type === "UI") {
       console.log(`- Socket ID: ${id}, User Interface`);
     } else {
-      console.log(
-        `- Socket ID: ${id}, Light ID: ${socket.data.lightID}, isOn: ${socket.data.isOn}`
-      );
+      console.log(`- Socket ID: ${id}`);
     }
   }
   console.log("-----");
