@@ -36,6 +36,7 @@ bulbNamespace.on("connection", (socket) => {
   });
 
   socket.on("disconnect", (reason) => {
+    uiNamespace.emit("refresh-ui");
     console.log(`Socket ${socket.data.lightID} disconnected: ${reason}`);
   });
 
