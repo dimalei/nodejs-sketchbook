@@ -1,8 +1,8 @@
 const bulbID = Math.random().toString(36).slice(2, 9).toUpperCase();
-const bulbIDString = document.querySelector(".lightID");
-const statusString = document.querySelector(".statusString");
-const bulb = document.querySelector(".bulb");
-const button = document.querySelector("button");
+const bulbIDString = document.getElementById("id");
+const statusString = document.getElementById("status");
+const bulb = document.getElementById("bulb");
+const button = document.getElementById("toggle");
 
 let isOn = false;
 

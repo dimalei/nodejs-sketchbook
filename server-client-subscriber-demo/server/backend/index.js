@@ -95,6 +95,7 @@ app.get("/api/lights", (req, res) => {
     lights.push({
       lightID: socket.data.lightID,
       isOn: socket.data.isOn,
+      type: socket.data.type,
     });
   });
   res.send({ lights: lights });

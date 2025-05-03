@@ -1,7 +1,8 @@
-const toggleAll = document.querySelector(".toggleAll");
-const onAll = document.querySelector(".onAll");
-const offAll = document.querySelector(".offAll");
-const lightsList = document.querySelector("#lightsList");
+const toggleAll = document.getElementById("toggleAll");
+const onAll = document.getElementById("onAll");
+const offAll = document.getElementById("offAll");
+const tableBody = document.getElementById("table-body");
+const indicator = document.getElementById("connectionIndicator");
 
 const superSectretAuthToken = "1234";
 
@@ -15,11 +16,18 @@ const socket = io("ws://localhost:8080/ui", {
 
 socket.on("connect", () => {
   refreshUI();
-}),
-  //refresh UI on event
-  socket.on("refresh-ui", () => {
-    refreshUI();
-  });
+  indicator.classList.replace("text-bg-warning","text-bg-info") = [];
+  indicator.innerText = "online";
+});
+
+socket.on("disconnect", () => {
+  indicator.classList.replace("text-bg-info","text-bg-warning") = [];
+  indicator.innerText = "offline";
+});
+
+socket.on("refresh-ui", () => {
+  refreshUI();
+});
 
 toggleAll.onclick = () => {
   fetch("/api/toggle-all", { method: "POST" });
@@ -42,32 +50,47 @@ const refreshUI = () => {
     .then((response) => response.json())
     .then((data) => {
       lights = data.lights;
-      createTable(lights);
       console.log("Fetched lights: ", lights);
+      createTable(lights);
     });
 };
 
 const createTable = (lights) => {
-  lightsList.innerHTML = "";
-
+  tableBody.innerHTML = "";
   lights.forEach((element) => {
-    const row = document.createElement("tr");
-
-    const lightIDCell = document.createElement("td");
-    lightIDCell.textContent = element.lightID;
-
-    const toggleButton = document.createElement("button");
-    toggleButton.textContent = element.isOn ? "ON" : "OFF";
-    toggleButton.onclick = () => {
-      fetch("/api/toggle?lightID=" + element.lightID, { method: "POST" });
-    };
-    toggleButton.style.backgroundColor = element.isOn ? "lightgreen" : "tomato";
-
-    const statusCell = document.createElement("td");
-    statusCell.appendChild(toggleButton);
-
-    row.appendChild(lightIDCell);
-    row.appendChild(statusCell);
-    lightsList.appendChild(row);
+    tableBody.appendChild(
+      tableEntry(element.lightID, element.type, element.isOn)
+    );
   });
+};
+
+const tableEntry = (lightID, type, isOn) => {
+  const tableRow = elementFromHtml(`<tr>
+              <td>${lightID}</td>
+              <td>${type}</td>
+              <td>
+                <button class="btn py-0" style="width: 80px;"></button>
+              </td>
+            </tr>`);
+
+  const button = tableRow.querySelector("button");
+  button.classList.add(isOn ? "btn-light" : "btn-outline-secondary");
+  button.innerHTML = isOn ? "ON" : "OFF";
+  button.onclick = () => {
+    fetch("/api/toggle?lightID=" + encodeURIComponent(lightID), {
+      method: "POST",
+    }).then((response) => {
+      if (!response.ok) {
+        console.error("Failed to toggle light", lightID);
+      }
+    });
+  };
+
+  return tableRow;
+};
+
+const elementFromHtml = (html) => {
+  const temlate = document.createElement("template");
+  temlate.innerHTML = html.trim();
+  return temlate.content.firstElementChild;
 };
