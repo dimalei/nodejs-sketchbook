@@ -6,7 +6,7 @@ const lightsList = document.querySelector("#lightsList");
 const superSectretAuthToken = "1234";
 
 // initiatie socket
-const socket = io("ws://localhost:8080", {
+const socket = io("ws://localhost:8080/ui", {
   query: {
     type: "ui",
     token: superSectretAuthToken,

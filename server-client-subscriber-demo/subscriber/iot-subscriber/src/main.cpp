@@ -32,12 +32,15 @@ void turnOnBulb() {
   pixel.show();
   bulbIsOn = true;
 
-  JsonDocument doc;
-  JsonArray array = doc.to<JsonArray>();
-  array.add("turn-on");
-  String output;
-  serializeJson(doc, output);
-  socketIO.sendEVENT(output);
+  // JsonDocument doc;
+  // doc.add("/bulbs");
+  // JsonArray array = doc.to<JsonArray>();
+  // array.add("turn-on");
+  // String output;
+  // serializeJson(doc, output);
+  // socketIO.sendEVENT(output);
+
+  socketIO.sendEVENT("/bulbs, [\"turn-on\"]");
 }
 
 void turnOffBulb() {
@@ -45,12 +48,15 @@ void turnOffBulb() {
   pixel.show();
   bulbIsOn = false;
 
-  JsonDocument doc;
-  JsonArray array = doc.to<JsonArray>();
-  array.add("turn-off");
-  String output;
-  serializeJson(doc, output);
-  socketIO.sendEVENT(output);
+  // JsonDocument doc;
+  // doc.add("/bulbs");
+  // JsonArray array = doc.to<JsonArray>();
+  // array.add("turn-off");
+  // String output;
+  // serializeJson(doc, output);
+  // socketIO.sendEVENT(output);
+
+  socketIO.sendEVENT("/bulbs, [\"turn-off\"]");
 }
 
 void toggleBulb() {
@@ -71,8 +77,8 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t *payload,
     case sIOtype_CONNECT:
       USE_SERIAL.printf("[IOc] Connected to url: %s\n", payload);
 
-      // join default namespace (no auto join in Socket.IO V3)
-      socketIO.send(sIOtype_CONNECT, "/");
+      // join bulbs namespace
+      socketIO.send(sIOtype_CONNECT, "/bulbs");
       break;
     case sIOtype_EVENT: {
       char *sptr = NULL;
@@ -81,8 +87,17 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t *payload,
       if (id) {
         payload = (uint8_t *)sptr;
       }
+
+      // remove namespace from payload
+      char *jsonStart = strchr((char *)payload, ',');
+      if (!jsonStart) {
+        USE_SERIAL.println("Invalid payload: missing comma");
+        return;
+      }
+      jsonStart++;  // move past the comma
+
       JsonDocument doc;
-      DeserializationError error = deserializeJson(doc, payload, length);
+      DeserializationError error = deserializeJson(doc, jsonStart);
       if (error) {
         USE_SERIAL.print(F("deserializeJson() failed: "));
         USE_SERIAL.println(error.c_str());
@@ -131,6 +146,16 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t *payload,
   }
 }
 
+void connectSocket() {
+  String url = "/socket.io/?EIO=4&type=IoTBulb&bulbID=";
+  url += bulbID;
+  url += "&isOn=";
+  url += bulbIsOn ? "true" : "false";
+
+  socketIO.begin(HOST, PORT, url);
+  socketIO.onEvent(socketIOEvent);
+}
+
 void setup() {
   USE_SERIAL.begin(115200);
 
@@ -168,12 +193,7 @@ void setup() {
 
   USE_SERIAL.println(bulbID);
 
-  String url = "/socket.io/?EIO=4&type=bulb&bulbID=";
-  url += bulbID;
-  url += "&isOn=false";
-
-  socketIO.begin(HOST, PORT, url);
-  socketIO.onEvent(socketIOEvent);
+  connectSocket();
 }
 
 void loop() {
@@ -183,12 +203,7 @@ void loop() {
   if (!socketIO.isConnected() &&
       millis() - lastReconnectAttempt > reconnectInterval) {
     USE_SERIAL.println("Trying to reconnect to Socket.IO server...");
-    String url = "/socket.io/?EIO=4&type=bulb&bulbID=";
-    url += bulbID;
-    url += "&isOn=";
-    url += bulbIsOn ? "true" : "false";
-    socketIO.begin(HOST, PORT, url);
-    socketIO.onEvent(socketIOEvent);  // re-attach event handler after reconnect
+    connectSocket();
     lastReconnectAttempt = millis();
   }
 }

@@ -6,8 +6,8 @@ const button = document.querySelector("button");
 
 let isOn = false;
 
-const socket = io("ws://localhost:8080", {
-  query: { type: "bulb", bulbID: bulbID, isOn: isOn },
+const socket = io("ws://localhost:8080/bulbs", {
+  query: { type: "WebBulb", bulbID: bulbID, isOn: isOn },
 });
 
 console.log("This light ID is: " + bulbID); // example output: "k8l3jf9xq"

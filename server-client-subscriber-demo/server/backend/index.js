@@ -15,19 +15,22 @@ const port = 8080;
 app.use(express.static(path.join(__dirname, "../public")));
 const authToken = "1234";
 
-io.on("connection", (socket) => {
-  // save light info in socket object
-  const query = socket.handshake.query;
+const bulbNamespace = io.of("/bulbs");
+const uiNamespace = io.of("/ui");
 
-  if (query.type === "bulb") {
-    socket.data.type = query.type;
-    socket.data.lightID = query.bulbID;
-    socket.data.isOn = query.isOn === "true"; // since query params are strings
-    console.log(`Bulb just connected with ID: ${socket.data.lightID}`);
-  } else if (query.type === "ui") {
-    socket.data.type = "UI";
-    console.log(`A UI just connected.`);
-  }
+io.on("connection", (socket) => {
+  socket.onAny((event, ...args) => {
+    uiNamespace.emit("refresh-ui");
+    console.log(`Received event '${event}' with args:`, args);
+  });
+});
+
+bulbNamespace.on("connection", (socket) => {
+  // save data
+  const query = socket.handshake.query;
+  socket.data.type = query.type;
+  socket.data.lightID = query.bulbID;
+  socket.data.isOn = query.isOn === "true"; // since query params are strings
 
   socket.on("turn-on", () => {
     socket.data.isOn = true;
@@ -44,9 +47,16 @@ io.on("connection", (socket) => {
   });
 
   socket.onAny((event, ...args) => {
-    io.emit("refresh-ui");
+    uiNamespace.emit("refresh-ui");
     console.log(`Received event '${event}' with args:`, args);
   });
+});
+
+uiNamespace.on("connection", (socket) => {
+  // save ui data
+  const query = socket.handshake.query;
+  socket.data.type = "UI";
+  console.log(`A UI just connected.`);
 });
 
 server.listen(port, () => {
@@ -56,14 +66,14 @@ server.listen(port, () => {
 app.post("/api/toggle-all", (req, res) => {
   console.log("All bulbs are toggled.");
   // send to all socket connections
-  io.emit("toggle-all");
+  bulbNamespace.emit("toggle-all");
   res.sendStatus(200);
 });
 
 app.post("/api/toggle", (req, res) => {
   const toToggleID = req.query.lightID;
   console.log("toggling ", toToggleID);
-  Array.from(io.sockets.sockets.values())
+  Array.from(bulbNamespace.sockets.values())
     .filter((socket) => socket.data.lightID === toToggleID)
     .forEach((socket) => {
       socket.emit("toggle-all");
@@ -74,26 +84,24 @@ app.post("/api/toggle", (req, res) => {
 app.post("/api/on-all", (req, res) => {
   console.log("All bulbs are turned on.");
   // send to all socket connections
-  io.emit("on-all");
+  bulbNamespace.emit("on-all");
   res.sendStatus(200);
 });
 
 app.post("/api/off-all", (req, res) => {
   console.log("All bulbs are turned off.");
   // send to all socket connections
-  io.emit("off-all");
+  bulbNamespace.emit("off-all");
   res.sendStatus(200);
 });
 
 app.get("/api/lights", (req, res) => {
   let lights = [];
-  io.sockets.sockets.forEach((socket) => {
-    if (socket.data.type === "bulb") {
-      lights.push({
-        lightID: socket.data.lightID,
-        isOn: socket.data.isOn,
-      });
-    }
+  bulbNamespace.sockets.forEach((socket) => {
+    lights.push({
+      lightID: socket.data.lightID,
+      isOn: socket.data.isOn,
+    });
   });
   res.send({ lights: lights });
 });
@@ -101,14 +109,13 @@ app.get("/api/lights", (req, res) => {
 setInterval(() => {
   // print all connected sockets evers 5 seconds
   console.log("Currently connected sockets:");
-  for (const [id, socket] of io.sockets.sockets) {
-    if (socket.data.type === "ui") {
-      console.log(`- Socket ID: ${id}, User Interface`);
-    } else {
-      console.log(
-        `- Socket ID: ${id}, Light ID: ${socket.data.lightID}, isOn: ${socket.data.isOn}`
-      );
-    }
+  for (const [id, socket] of bulbNamespace.sockets) {
+    console.log(
+      `- Socket ID: ${id}, Light ID: ${socket.data.lightID}, type: ${socket.data.type} isOn: ${socket.data.isOn}`
+    );
+  }
+  for (const [id, socket] of uiNamespace.sockets) {
+    console.log(`- Socket ID: ${id}, User Interface`);
   }
 
   console.log("-----");
