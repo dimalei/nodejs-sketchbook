@@ -18,13 +18,6 @@ const authToken = "1234";
 const bulbNamespace = io.of("/bulbs");
 const uiNamespace = io.of("/ui");
 
-io.on("connection", (socket) => {
-  socket.onAny((event, ...args) => {
-    uiNamespace.emit("refresh-ui");
-    console.log(`Received event '${event}' with args:`, args);
-  });
-});
-
 bulbNamespace.on("connection", (socket) => {
   // save data
   const query = socket.handshake.query;
