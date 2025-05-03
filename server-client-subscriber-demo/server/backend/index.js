@@ -17,14 +17,14 @@ const authToken = "1234";
 
 io.on("connection", (socket) => {
   // save light info in socket object
+  const query = socket.handshake.query;
 
-  if (socket.handshake.auth.type === "bulb") {
-    socket.data.type = socket.handshake.auth.type;
-    socket.data.lightID = socket.handshake.auth.bulbID;
-    socket.data.isOn = socket.handshake.auth.isOn;
-    io.emit("refresh-ui");
+  if (query.type === "bulb") {
+    socket.data.type = query.type;
+    socket.data.lightID = query.bulbID;
+    socket.data.isOn = query.isOn === "true"; // since query params are strings
     console.log(`Bulb just connected with ID: ${socket.data.lightID}`);
-  } else if (socket.handshake.auth.token === authToken) {
+  } else if (query.type === "ui") {
     socket.data.type = "UI";
     console.log(`A UI just connected.`);
   }
@@ -40,12 +40,12 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", (reason) => {
-    io.emit("refresh-ui");
     console.log(`Socket ${socket.data.lightID} disconnected: ${reason}`);
   });
 
-  socket.onAny(() => {
+  socket.onAny((event, ...args) => {
     io.emit("refresh-ui");
+    console.log(`Received event '${event}' with args:`, args);
   });
 });
 
@@ -102,7 +102,7 @@ setInterval(() => {
   // print all connected sockets evers 5 seconds
   console.log("Currently connected sockets:");
   for (const [id, socket] of io.sockets.sockets) {
-    if (socket.data.type === "UI") {
+    if (socket.data.type === "ui") {
       console.log(`- Socket ID: ${id}, User Interface`);
     } else {
       console.log(
@@ -110,5 +110,6 @@ setInterval(() => {
       );
     }
   }
+
   console.log("-----");
 }, 5000);
