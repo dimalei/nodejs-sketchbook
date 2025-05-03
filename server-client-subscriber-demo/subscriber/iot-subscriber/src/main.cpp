@@ -4,8 +4,11 @@
 #include <SocketIOclient.h>
 #include <WiFi.h>
 
+#include "OneButton.h"
 #include "secrets.h"
 
+OneButton button;
+#define BUTTON_PIN 6
 // 4 external RGB LEDs on pin 1
 // 1 internal RGB LED on pin 8
 #define USE_SERIAL Serial
@@ -106,6 +109,10 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t *payload,
 
       if (eventName.equals("toggle-all")) {
         toggleBulb();
+      } else if (eventName.equals("on-all")) {
+        turnOnBulb();
+      } else if (eventName.equals("off-all")) {
+        turnOffBulb();
       }
 
     } break;
@@ -126,6 +133,10 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t *payload,
 
 void setup() {
   USE_SERIAL.begin(115200);
+
+  button.setup(BUTTON_PIN, INPUT, false);
+  button.attachClick(toggleBulb);
+
   pixel.begin();
   pixel.setBrightness(50);
   pixel.setPixelColor(1, pixel.Color(0, 0, 100));
@@ -167,6 +178,7 @@ void setup() {
 
 void loop() {
   socketIO.loop();
+  button.tick();
 
   if (!socketIO.isConnected() &&
       millis() - lastReconnectAttempt > reconnectInterval) {

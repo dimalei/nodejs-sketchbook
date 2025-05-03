@@ -23,7 +23,6 @@ io.on("connection", (socket) => {
     socket.data.type = query.type;
     socket.data.lightID = query.bulbID;
     socket.data.isOn = query.isOn === "true"; // since query params are strings
-    io.emit("refresh-ui");
     console.log(`Bulb just connected with ID: ${socket.data.lightID}`);
   } else if (query.type === "ui") {
     socket.data.type = "UI";
@@ -41,7 +40,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", (reason) => {
-    io.emit("refresh-ui");
     console.log(`Socket ${socket.data.lightID} disconnected: ${reason}`);
   });
 
