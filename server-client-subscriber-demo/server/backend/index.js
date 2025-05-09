@@ -24,6 +24,7 @@ bulbNamespace.on("connection", (socket) => {
   socket.data.type = query.type;
   socket.data.lightID = query.bulbID;
   socket.data.isOn = query.isOn === "true"; // since query params are strings
+  uiNamespace.emit("refresh-ui");
 
   socket.on("turn-on", () => {
     socket.data.isOn = true;

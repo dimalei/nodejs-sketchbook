@@ -20,8 +20,8 @@ bool bulbIsOn = false;
 char bulbID[20] = "ESP32_";
 uint8_t macAddress[6];
 
-#define HOST "192.168.1.59"
-const uint16_t PORT = 8080;
+#define HOST "86.119.47.104"
+const uint16_t PORT = 80;
 SocketIOclient socketIO;
 unsigned long lastReconnectAttempt = 0;
 const unsigned long reconnectInterval = 5000;
