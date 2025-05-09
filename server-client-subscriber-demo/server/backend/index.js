@@ -9,7 +9,7 @@ const io = new Server(server, {
   cors: { origin: "*" },
 });
 
-const port = 8080;
+const port = 3000;
 
 // frontent route
 app.use(express.static(path.join(__dirname, "../public")));
