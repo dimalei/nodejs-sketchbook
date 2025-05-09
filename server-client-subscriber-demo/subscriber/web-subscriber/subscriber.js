@@ -3,10 +3,12 @@ const bulbIDString = document.getElementById("id");
 const statusString = document.getElementById("status");
 const bulb = document.getElementById("bulb");
 const button = document.getElementById("toggle");
+const connection = document.getElementById("connection");
 
 let isOn = false;
+const ip = "86.119.47.104:80";
 
-const socket = io("ws://localhost:8080/bulbs", {
+const socket = io("ws://" + ip + "/bulbs", {
   query: { type: "WebBulb", bulbID: bulbID, isOn: isOn },
 });
 
@@ -16,6 +18,7 @@ bulbIDString.innerHTML = "Light ID: #" + bulbID;
 
 socket.on("connect", () => {
   console.log(`Connected to server as socket ${socket.id}`);
+  connection.innerText = "connected";
 });
 
 socket.on("toggle-all", () => {
@@ -31,6 +34,11 @@ socket.on("on-all", () => {
 socket.on("off-all", () => {
   console.log("received off-all event.");
   turnOffBulb();
+});
+
+socket.on("disconnect", () => {
+  console.log(`socket disconnected`);
+  connection.innerText = "disconnected";
 });
 
 function toggleBulb() {

@@ -5,9 +5,10 @@ const tableBody = document.getElementById("table-body");
 const indicator = document.getElementById("connectionIndicator");
 
 const superSectretAuthToken = "1234";
+const ip = "86.119.47.104:80";
 
 // initiatie socket
-const socket = io("ws://localhost:8080/ui", {
+const socket = io("ws://" + ip + "/ui", {
   query: {
     type: "ui",
     token: superSectretAuthToken,
